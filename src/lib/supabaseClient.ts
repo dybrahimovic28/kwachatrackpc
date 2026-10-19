@@ -15,3 +15,27 @@ export const KWACHA_SUPABASE_CONFIG = {
   url: SUPABASE_URL,
   isConfigured: Boolean(SUPABASE_URL && SUPABASE_ANON_KEY)
 };
+
+/**
+ * Returns the exact OAuth & email authentication redirect destination.
+ * Automatically chooses the production domain on Vercel, localhost during development,
+ * or the custom protocol (kwachatrack://login-callback) when running inside Electron.
+ * Never includes hash fragments which violate OAuth 2.0 (RFC 6749 Section 3.1.2).
+ */
+export const getAuthRedirectUrl = (): string => {
+  if (typeof window === 'undefined') return '';
+
+  // Electron desktop application uses custom protocol registered with Windows OS
+  if (window.electronAPI?.isDesktop) {
+    return 'kwachatrack://login-callback';
+  }
+
+  // Explicit env override if set in Vercel or environment
+  if (import.meta.env.VITE_AUTH_REDIRECT_URL) {
+    const raw = import.meta.env.VITE_AUTH_REDIRECT_URL.trim();
+    return raw.endsWith('/') ? raw : `${raw}/`;
+  }
+
+  // Current browser origin (e.g. https://kwachatrackpc.vercel.app/ or http://localhost:5173/)
+  return `${window.location.origin}/`;
+};

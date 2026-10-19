@@ -14,6 +14,23 @@ interface DownloadSectionProps {
   onGoToApp?: () => void;
 }
 
+export const DOWNLOAD_CONFIG = {
+  android: {
+    version: '1.0.0',
+    fileName: 'KwachaTrack-v1.0.0.apk',
+    fileSize: '21.9 MB',
+    releaseUrl: import.meta.env.VITE_ANDROID_DOWNLOAD_URL || 'https://github.com/dybrahimovic28/kwachatrackANDROID/releases/download/v1.0.0/KwachaTrack-v1.0.0.apk',
+    releasesPageUrl: 'https://github.com/dybrahimovic28/kwachatrackANDROID/releases'
+  },
+  windows: {
+    version: '1.0.0',
+    fileName: 'KwachaTrack-v1.0.0-Setup.exe',
+    fileSize: '204.8 MB',
+    releaseUrl: import.meta.env.VITE_WINDOWS_DOWNLOAD_URL || 'https://github.com/dybrahimovic28/kwachatrackpc/releases/download/v1.0.0/KwachaTrack-v1.0.0-Setup.exe',
+    releasesPageUrl: 'https://github.com/dybrahimovic28/kwachatrackpc/releases'
+  }
+};
+
 export const DownloadSection: React.FC<DownloadSectionProps> = ({ onGoToApp }) => {
   const [deviceHint, setDeviceHint] = useState<string>('');
   const [showAndroidHelp, setShowAndroidHelp] = useState(false);
@@ -83,7 +100,7 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({ onGoToApp }) =
                     Android
                   </h3>
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    APK v1.0.0 • 21.9 MB
+                    APK v{DOWNLOAD_CONFIG.android.version} • {DOWNLOAD_CONFIG.android.fileSize}
                   </div>
                 </div>
               </div>
@@ -93,12 +110,13 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({ onGoToApp }) =
               </p>
 
               <a
-                href="./downloads/KwachaTrack-v1.0.0.apk"
-                download="KwachaTrack-v1.0.0.apk"
+                href={DOWNLOAD_CONFIG.android.releaseUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="btn-primary"
-                style={{ width: '100%', marginBottom: '14px' }}
+                style={{ width: '100%', marginBottom: '14px', textDecoration: 'none' }}
               >
-                <Download size={18} /> Download APK (21.9 MB)
+                <Download size={18} /> Download APK ({DOWNLOAD_CONFIG.android.fileSize})
               </a>
 
               <button
@@ -131,10 +149,11 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({ onGoToApp }) =
                 lineHeight: 1.55
               }}>
                 <ol style={{ paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <li>Tap the download button to save the APK to your device.</li>
+                  <li>Click download to retrieve the APK package directly from official GitHub Releases.</li>
                   <li>When prompted that the file might be harmful, choose <strong>Download anyway</strong> (standard prompt for browser downloads outside Google Play).</li>
                   <li>Open the file. If asked to permit unknown apps, toggle <strong>Allow from this source</strong>.</li>
-                  <li>Tap <strong>Install</strong> to complete setup.</li>
+                  <li>Tap <strong>Install</strong> to complete setup. Note: The current package is a developer/debug build; production releases should be signed with a production keystore before public distribution.</li>
+                  <li>You can also browse all published assets directly on <a href={DOWNLOAD_CONFIG.android.releasesPageUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-emerald)', fontWeight: 600 }}>GitHub Releases</a>.</li>
                 </ol>
               </div>
             )}
@@ -166,7 +185,7 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({ onGoToApp }) =
                     Windows PC
                   </h3>
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    Installer v1.0.0 • x64
+                    Installer v{DOWNLOAD_CONFIG.windows.version} • {DOWNLOAD_CONFIG.windows.fileSize}
                   </div>
                 </div>
               </div>
@@ -176,12 +195,13 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({ onGoToApp }) =
               </p>
 
               <a
-                href="./downloads/KwachaTrack-v1.0.0-Setup.exe"
-                download="KwachaTrack-v1.0.0-Setup.exe"
+                href={DOWNLOAD_CONFIG.windows.releaseUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="btn-primary"
-                style={{ width: '100%', marginBottom: '14px' }}
+                style={{ width: '100%', marginBottom: '14px', textDecoration: 'none' }}
               >
-                <Download size={18} /> Download Windows Installer
+                <Download size={18} /> Download Windows Installer ({DOWNLOAD_CONFIG.windows.fileSize})
               </a>
 
               <button
@@ -214,9 +234,10 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({ onGoToApp }) =
                 lineHeight: 1.55
               }}>
                 <ol style={{ paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <li>Download and launch <code>KwachaTrack-v1.0.0-Setup.exe</code>.</li>
+                  <li>Download <code>{DOWNLOAD_CONFIG.windows.fileName}</code> directly from official GitHub Releases.</li>
                   <li>If Windows SmartScreen appears (<em>"Windows protected your PC"</em>), click <strong>More info</strong> then <strong>Run anyway</strong>. Unsigned installers commonly trigger this notice until certificate reputation builds.</li>
                   <li>Follow the setup wizard to complete installation.</li>
+                  <li>You can also browse all published assets directly on <a href={DOWNLOAD_CONFIG.windows.releasesPageUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-emerald)', fontWeight: 600 }}>GitHub Releases</a>.</li>
                 </ol>
               </div>
             )}

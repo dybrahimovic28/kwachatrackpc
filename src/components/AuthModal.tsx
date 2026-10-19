@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase, getAuthRedirectUrl } from '../lib/supabaseClient';
 import { UserProfile } from '../types';
 import { X, Mail, Lock, User, AlertCircle, ArrowRight, ArrowLeft, CheckCircle2, KeyRound } from 'lucide-react';
 
@@ -9,6 +9,7 @@ interface AuthModalProps {
   onBackToHome: () => void;
   onAuthSuccess: (user: UserProfile) => void;
   onDemoLogin?: () => void;
+  initialError?: string | null;
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({
@@ -16,7 +17,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onClose,
   onBackToHome,
   onAuthSuccess,
-  onDemoLogin
+  onDemoLogin,
+  initialError
 }) => {
   const [authMode, setAuthMode] = useState<'signin' | 'signup' | 'forgot'>('signin');
   const [email, setEmail] = useState('');
@@ -30,12 +32,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   // Reset state whenever modal opens or closes
   useEffect(() => {
     if (isOpen) {
-      setErrorMsg(null);
+      setErrorMsg(initialError || null);
       setSuccessMsg(null);
       setLoading(false);
       setGoogleLoading(false);
     }
-  }, [isOpen]);
+  }, [isOpen, initialError]);
 
   // Close on Escape key
   useEffect(() => {
@@ -56,10 +58,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setGoogleLoading(true);
 
     try {
-      const isDesktop = typeof window !== 'undefined' && window.electronAPI?.isDesktop;
-      const redirectUrl = isDesktop
-        ? 'kwachatrack://login-callback'
-        : `${window.location.origin}/#app`;
+      const redirectUrl = getAuthRedirectUrl();
 
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -73,7 +72,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       });
 
       if (error) throw error;
-      // In web, browser will redirect to Google accounts sign-in
+      // In web, browser redirects to Google accounts sign-in
     } catch (err: any) {
       setErrorMsg(err.message || 'Google sign-in could not be initiated. Please verify your internet connection or use email and password.');
       setGoogleLoading(false);
@@ -95,27 +94,33 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           throw new Error('Password must be at least 6 characters');
         }
 
+        const redirectUrl = getAuthRedirectUrl();
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
           options: {
             data: {
               full_name: fullName.trim()
-            }
+            },
+            emailRedirectTo: redirectUrl
           }
         });
 
         if (error) throw error;
 
-        if (data.user) {
+        // If an active session was returned immediately (e.g. email confirmation disabled)
+        if (data.session && data.user) {
           const profile: UserProfile = {
             id: data.user.id,
-            email: data.user.email || email,
+            email: data.user.email || email.trim(),
             full_name: fullName.trim(),
             currency: 'ZMW'
           };
           onAuthSuccess(profile);
           onClose();
+        } else {
+          // Email confirmation is required by Supabase project configuration
+          setSuccessMsg('Account registered successfully! A confirmation link has been sent to your email. Please check your inbox and verify your email to access your dashboard.');
         }
       } else if (authMode === 'signin') {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -126,17 +131,29 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         if (error) throw error;
 
         if (data.user) {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', data.user.id)
-            .single();
+          let fullNameValue: string | null = (data.user.user_metadata?.full_name as string) || (data.user.user_metadata?.name as string) || null;
+          let currencyValue = 'ZMW';
+
+          try {
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', data.user.id)
+              .maybeSingle();
+
+            if (profileData) {
+              if (profileData.full_name) fullNameValue = profileData.full_name;
+              if (profileData.currency) currencyValue = profileData.currency;
+            }
+          } catch (profileErr) {
+            console.warn('Could not fetch extra profile fields, falling back to auth metadata', profileErr);
+          }
 
           const profile: UserProfile = {
             id: data.user.id,
-            email: data.user.email || email,
-            full_name: profileData?.full_name || data.user.user_metadata?.full_name || null,
-            currency: profileData?.currency || 'ZMW'
+            email: data.user.email || email.trim(),
+            full_name: fullNameValue,
+            currency: currencyValue
           };
           onAuthSuccess(profile);
           onClose();
@@ -146,10 +163,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           throw new Error('Please enter your registered email address');
         }
 
-        const isDesktop = typeof window !== 'undefined' && window.electronAPI?.isDesktop;
-        const redirectUrl = isDesktop 
-          ? 'kwachatrack://login-callback' 
-          : `${window.location.origin}/#reset-password`;
+        const redirectUrl = getAuthRedirectUrl();
 
         const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
           redirectTo: redirectUrl
@@ -157,7 +171,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
         if (error) throw error;
 
-        setSuccessMsg('A password recovery email has been sent. Please check your inbox and click the reset link.');
+        setSuccessMsg('A password recovery email has been sent. Please check your inbox and click the reset link to choose a new password.');
       }
     } catch (err: any) {
       setErrorMsg(err.message || 'An error occurred during authentication');
