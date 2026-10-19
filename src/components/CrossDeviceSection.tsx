@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Smartphone, 
   Monitor, 
@@ -8,6 +8,8 @@ import {
   ShieldCheck,
   Sparkles
 } from 'lucide-react';
+import { promptPwaInstall } from '../utils/pwaInstall';
+import { PwaInstallModal } from './PwaInstallModal';
 
 interface CrossDeviceSectionProps {
   onGoToDownload: () => void;
@@ -15,6 +17,15 @@ interface CrossDeviceSectionProps {
 }
 
 export const CrossDeviceSection: React.FC<CrossDeviceSectionProps> = ({ onGoToDownload, onGoToApp }) => {
+  const [modalStatus, setModalStatus] = useState<'already-installed' | 'manual-instructions' | null>(null);
+
+  const handleWindowsInstall = async () => {
+    const res = await promptPwaInstall();
+    if (res === 'already-installed' || res === 'manual-instructions') {
+      setModalStatus(res);
+    }
+  };
+
   const platforms = [
     {
       icon: <Smartphone size={26} color="var(--color-emerald)" />,
@@ -29,21 +40,22 @@ export const CrossDeviceSection: React.FC<CrossDeviceSectionProps> = ({ onGoToDo
         "Fast transaction entry in just seconds"
       ],
       actionText: "Download Android App",
+      onClick: onGoToDownload,
       isPrimaryAction: false
     },
     {
       icon: <Monitor size={26} color="var(--color-sky-text)" />,
       bg: 'var(--color-sky)',
-      title: "Windows Desktop App",
+      title: "Windows App",
       badge: "Full-Screen Power",
-      description: "Dedicated desktop software for your PC or laptop. Ideal for end-of-month budget planning, detailed reviews, and long-term targets.",
+      description: "Install KwachaTrack directly from your browser for a dedicated desktop experience.",
       features: [
-        "Packaged installer for Windows 10 & 11",
-        "Multi-column desktop overview with keyboard navigation",
-        "Desktop shortcuts for one-click access",
-        "Comfortable wide-screen financial management"
+        "Install on supported Windows browsers",
+        "Standalone app window and convenient access",
+        "Manage budgets, transactions, savings, and reports"
       ],
-      actionText: "Download Windows App",
+      actionText: "Install KwachaTrack",
+      onClick: handleWindowsInstall,
       isPrimaryAction: false
     },
     {
@@ -55,10 +67,11 @@ export const CrossDeviceSection: React.FC<CrossDeviceSectionProps> = ({ onGoToDo
       features: [
         "Zero installation or downloads required",
         "Instant access from work, home, or shared laptops",
-        "Interactive Demo Mode available without sign-up",
+        "Instant access with your KwachaTrack account",
         "Fully responsive layout for any screen size"
       ],
       actionText: "Open Web App",
+      onClick: onGoToApp,
       isPrimaryAction: true
     }
   ];
@@ -139,7 +152,7 @@ export const CrossDeviceSection: React.FC<CrossDeviceSectionProps> = ({ onGoToDo
 
               <div>
                 <button
-                  onClick={p.isPrimaryAction ? onGoToApp : onGoToDownload}
+                  onClick={p.onClick}
                   className={p.isPrimaryAction ? 'btn-primary' : 'btn-secondary'}
                   style={{ width: '100%', padding: '12px 20px', fontSize: '0.92rem' }}
                 >
@@ -192,6 +205,13 @@ export const CrossDeviceSection: React.FC<CrossDeviceSectionProps> = ({ onGoToDo
           </button>
         </div>
       </div>
+
+      <PwaInstallModal
+        isOpen={modalStatus !== null}
+        status={modalStatus || 'manual-instructions'}
+        onClose={() => setModalStatus(null)}
+        onLaunchApp={onGoToApp}
+      />
     </section>
   );
 };

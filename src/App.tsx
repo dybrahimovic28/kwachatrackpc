@@ -231,7 +231,10 @@ export const App: React.FC = () => {
         } else {
           // No active session found: inspect initial hash to determine tab
           const hash = window.location.hash;
-          if (hash === '#app' || hash === '#get-started') {
+          if (isDesktopApp) {
+            setActiveTab('app');
+            setAuthModalOpen(true);
+          } else if (hash === '#app' || hash === '#get-started') {
             setActiveTab('app');
           } else if (hash === '#signin') {
             setActiveTab('home');
@@ -508,33 +511,35 @@ export const App: React.FC = () => {
                   </div>
                 </div>
 
-                <div style={{ marginTop: '24px', textAlign: 'center' }}>
-                  <button
-                    onClick={() => navigateTo('home', false)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: 'var(--text-secondary)',
-                      cursor: 'pointer',
-                      fontSize: '0.92rem',
-                      fontWeight: 600,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '8px 14px',
-                      borderRadius: '8px',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.color = 'var(--color-navy)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.color = 'var(--text-secondary)';
-                    }}
-                  >
-                    <ArrowLeft size={16} /> Return to Homepage & Product Overview
-                  </button>
-                </div>
+                {!isDesktopApp && (
+                  <div style={{ marginTop: '24px', textAlign: 'center' }}>
+                    <button
+                      onClick={() => navigateTo('home', false)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--text-secondary)',
+                        cursor: 'pointer',
+                        fontSize: '0.92rem',
+                        fontWeight: 600,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '8px 14px',
+                        borderRadius: '8px',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = 'var(--color-navy)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = 'var(--text-secondary)';
+                      }}
+                    >
+                      <ArrowLeft size={16} /> Return to Homepage & Product Overview
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </>
@@ -559,7 +564,6 @@ export const App: React.FC = () => {
           setIsDemoMode(false);
           navigateTo('app', false);
         }}
-        onDemoLogin={handleDemoLogin}
         initialError={authErrorMessage}
       />
 

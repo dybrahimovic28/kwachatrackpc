@@ -1,0 +1,25 @@
+{
+  "name": "KwachaTrack",
+  "short_name": "KwachaTrack",
+  "description": "Zambia's premier personal finance management application. Track income, expenses, budgets and savings.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#070D0A",
+  "theme_color": "#070D0A",
+  "icons": [
+    {
+      "src": "/images/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

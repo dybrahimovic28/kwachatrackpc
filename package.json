@@ -38,17 +38,20 @@
     ],
     "win": {
       "target": [
-        "nsis",
-        "portable"
+        "nsis"
       ],
       "icon": "public/images/icon.ico"
     },
     "nsis": {
       "oneClick": false,
+      "perMachine": false,
+      "allowElevation": false,
+      "packElevateHelper": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "KwachaTrack"
+      "shortcutName": "KwachaTrack",
+      "artifactName": "KwachaTrack-v${version}-Setup.${ext}"
     }
   }
 }

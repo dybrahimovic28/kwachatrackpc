@@ -38,7 +38,7 @@ export const FaqSection: React.FC<FaqSectionProps> = ({ onGoToApp, onGoToDownloa
     },
     {
       q: "Is the Web App available without installation?",
-      a: "Yes. You can open the complete KwachaTrack web application directly in Google Chrome, Microsoft Edge, Safari, or Firefox without downloading software. It includes an interactive Demo Mode so you can explore all features before creating an account."
+      a: "Yes. You can open the complete KwachaTrack web application directly in Google Chrome, Microsoft Edge, Safari, or Firefox without downloading software. Sign in with your email or Continue with Google to access your financial records immediately across your devices."
     }
   ];
 

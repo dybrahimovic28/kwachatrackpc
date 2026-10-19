@@ -7,8 +7,12 @@ import {
   ChevronDown, 
   ChevronUp, 
   ArrowRight,
-  Info
+  Info,
+  CheckCircle,
+  ExternalLink
 } from 'lucide-react';
+import { promptPwaInstall } from '../utils/pwaInstall';
+import { PwaInstallModal } from './PwaInstallModal';
 
 interface DownloadSectionProps {
   onGoToApp?: () => void;
@@ -35,6 +39,14 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({ onGoToApp }) =
   const [deviceHint, setDeviceHint] = useState<string>('');
   const [showAndroidHelp, setShowAndroidHelp] = useState(false);
   const [showWindowsHelp, setShowWindowsHelp] = useState(false);
+  const [pwaModalStatus, setPwaModalStatus] = useState<'already-installed' | 'manual-instructions' | null>(null);
+
+  const handlePwaInstall = async () => {
+    const res = await promptPwaInstall();
+    if (res === 'already-installed' || res === 'manual-instructions') {
+      setPwaModalStatus(res);
+    }
+  };
 
   useEffect(() => {
     const ua = navigator.userAgent || '';
@@ -182,27 +194,25 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({ onGoToApp }) =
                 </div>
                 <div>
                   <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--color-navy)', margin: 0 }}>
-                    Windows PC
+                    Windows App
                   </h3>
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    Installer v{DOWNLOAD_CONFIG.windows.version} • {DOWNLOAD_CONFIG.windows.fileSize}
+                    Desktop PWA • Standalone Window
                   </div>
                 </div>
               </div>
 
               <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.55, marginBottom: '20px' }}>
-                Desktop setup wizard with Start Menu and Desktop shortcuts for Windows 10 and 11.
+                Install KwachaTrack directly from your browser for a dedicated desktop experience.
               </p>
 
-              <a
-                href={DOWNLOAD_CONFIG.windows.releaseUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={handlePwaInstall}
                 className="btn-primary"
-                style={{ width: '100%', marginBottom: '14px', textDecoration: 'none' }}
+                style={{ width: '100%', marginBottom: '14px', border: 'none', cursor: 'pointer' }}
               >
-                <Download size={18} /> Download Windows Installer ({DOWNLOAD_CONFIG.windows.fileSize})
-              </a>
+                <Monitor size={18} /> Install KwachaTrack
+              </button>
 
               <button
                 onClick={() => setShowWindowsHelp(!showWindowsHelp)}
@@ -234,10 +244,10 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({ onGoToApp }) =
                 lineHeight: 1.55
               }}>
                 <ol style={{ paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <li>Download <code>{DOWNLOAD_CONFIG.windows.fileName}</code> directly from official GitHub Releases.</li>
-                  <li>If Windows SmartScreen appears (<em>"Windows protected your PC"</em>), click <strong>More info</strong> then <strong>Run anyway</strong>. Unsigned installers commonly trigger this notice until certificate reputation builds.</li>
-                  <li>Follow the setup wizard to complete installation.</li>
-                  <li>You can also browse all published assets directly on <a href={DOWNLOAD_CONFIG.windows.releasesPageUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-emerald)', fontWeight: 600 }}>GitHub Releases</a>.</li>
+                  <li>Click <strong>Install KwachaTrack</strong> above, or look for the Install icon (⊞) in your browser's address bar in Edge or Chrome.</li>
+                  <li>Alternatively, click your browser menu (<strong>...</strong>) &rarr; <strong>Apps</strong> &rarr; <strong>Install KwachaTrack</strong>.</li>
+                  <li>Enjoy dedicated desktop window and shortcuts with zero Smart App Control warnings.</li>
+                  <li>Need the offline setup wizard instead? <a href={DOWNLOAD_CONFIG.windows.releaseUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-emerald)', fontWeight: 600 }}>Download Windows Setup (.exe)</a>.</li>
                 </ol>
               </div>
             )}
@@ -287,12 +297,19 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({ onGoToApp }) =
               </button>
 
               <div style={{ fontSize: '0.84rem', color: 'var(--text-tertiary)', textAlign: 'center' }}>
-                Includes interactive Demo Mode without signing in
+                Direct cloud access across all your devices
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <PwaInstallModal
+        isOpen={pwaModalStatus !== null}
+        status={pwaModalStatus || 'manual-instructions'}
+        onClose={() => setPwaModalStatus(null)}
+        onLaunchApp={onGoToApp}
+      />
     </section>
   );
 };

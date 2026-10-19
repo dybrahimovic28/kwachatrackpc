@@ -8,7 +8,6 @@ interface AuthModalProps {
   onClose: () => void;
   onBackToHome: () => void;
   onAuthSuccess: (user: UserProfile) => void;
-  onDemoLogin?: () => void;
   initialError?: string | null;
 }
 
@@ -17,7 +16,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onClose,
   onBackToHome,
   onAuthSuccess,
-  onDemoLogin,
   initialError
 }) => {
   const [authMode, setAuthMode] = useState<'signin' | 'signup' | 'forgot'>('signin');

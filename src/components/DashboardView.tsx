@@ -329,7 +329,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ user, isDemoMode =
                 <span>{user.email}</span>
                 <span>•</span>
                 <span style={{ color: 'var(--color-emerald)', fontWeight: 600 }}>Zambian Kwacha (ZMW)</span>
-                {isDemoMode && <span style={{ color: '#D97706', fontWeight: 700 }}>• Demo Mode</span>}
               </div>
             </div>
           </div>

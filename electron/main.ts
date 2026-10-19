@@ -14,15 +14,27 @@ if (process.defaultApp) {
 
 function handleDeepLink(url: string) {
   if (!mainWindow || !url) return;
-  // If URL has access_token or code, pass into renderer window
-  if (url.includes('login-callback') || url.includes('access_token') || url.includes('type=recovery')) {
+  // If URL has access_token, code, or recovery token, pass into renderer window
+  if (
+    url.includes('login-callback') ||
+    url.includes('access_token') ||
+    url.includes('type=recovery') ||
+    url.includes('code=')
+  ) {
     const hash = url.includes('#') ? url.substring(url.indexOf('#')) : '';
     const query = url.includes('?') ? url.substring(url.indexOf('?')) : '';
-    mainWindow.webContents.executeJavaScript(`
-      if (window.location) {
-        window.location.hash = '${hash}';
-      }
-    `);
+    const tokenPayload = hash || (query ? '#' + query.replace(/^\?/, '') : '');
+
+    if (tokenPayload) {
+      mainWindow.webContents.executeJavaScript(`
+        if (window.location) {
+          window.location.hash = '${tokenPayload}';
+        }
+      `);
+    }
+
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
   }
 }
 
@@ -42,13 +54,23 @@ function createWindow() {
     }
   });
 
-  // Open external links in default browser
+  // Open external window popups in default system browser
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith('http:') || url.startsWith('https:')) {
       shell.openExternal(url);
       return { action: 'deny' };
     }
     return { action: 'allow' };
+  });
+
+  // Intercept external navigations (e.g. Google OAuth redirect) so they open in the default browser
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    if (url.startsWith('http:') || url.startsWith('https:')) {
+      if (!url.includes('localhost') && !url.includes('127.0.0.1')) {
+        event.preventDefault();
+        shell.openExternal(url);
+      }
+    }
   });
 
   const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
@@ -84,6 +106,14 @@ if (!gotTheLock) {
 
   app.whenReady().then(() => {
     createWindow();
+
+    // Check if app was launched via deep link in process.argv (cold start on Windows)
+    const initialDeepLink = process.argv.find(arg => arg.startsWith('kwachatrack://'));
+    if (initialDeepLink && mainWindow) {
+      mainWindow.webContents.once('did-finish-load', () => {
+        handleDeepLink(initialDeepLink);
+      });
+    }
 
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) {
